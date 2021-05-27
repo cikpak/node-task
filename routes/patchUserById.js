@@ -1,23 +1,33 @@
 const db = require('../database')
 
-module.exports = (req, res, next) => {
+module.exports = async (request, h) => {
     try {
-        const { id } = req.params
+        const { id } = request.params
 
-        db.update({ _id: id }, { $set: { ...req.body, type: 'user' } }, { returnUpdatedDocs: true }, (err, updatedDoc) => {
-            try {
-                if (err) throw 'Failed to update user!'
+        const updatedNumber = await db.asyncUpdate({ _id: id }, { $set: { ...request.payload, type: 'user' } })
 
-                res.json({
-                    success: true,
-                    msg: 'User was updated!',
-                    updatedUser: updatedDoc
-                })
-            } catch (err) {
-                next(err)
+        if (updatedNumber === 1) {
+            const user = await db.asyncFindOne({ _id: id })
+            return {
+                success: true,
+                msg: 'User was updated!',
+                newUser: user
             }
-        })
+        } else {
+            return {
+                success: false,
+                msg: 'Invalid user id!',
+                newUser: null
+            }
+        }
+
     } catch (err) {
-        next(err)
+        console.log(`err`, err)
+
+        return {
+            success: false,
+            msg: 'Failed to update user data!',
+            newUser: null
+        }
     }
 }

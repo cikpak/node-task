@@ -1,35 +1,36 @@
 const db = require('../database')
 const axios = require('axios')
 
-
-module.exports = (req, res, next) => {
+module.exports = async (request) => {
     try {
-        const { id } = req.params
+        const { id } = request.params
 
-        db.findOne({ _id: id }, async (err, user) => {
-            if (err) throw 'Failed to get user comments!'
+        const user = await db.asyncFindOne({ _id: id })
 
-            if (user) {
-                try {
-                    const { statusText, data } = await axios({ url: 'https://jsonplaceholder.typicode.com/posts/1/comments' })
-
-                    if (statusText === 'OK') {
-                        res.json({
-                            success: true,
-                            userComments: data
-                        })
-                    }
-                } catch (err) {
-                    if (err.hasOwnProperty('response')) {
-                        //axios error
-                        return next('Failed to get user comments from remoute resource!')
-                    }
-
-                    next('Failed to get user comments!')
-                }
+        if (!user) {
+            return {
+                success: false,
+                msg: 'Invalid user id!',
+                userComments: null
             }
-        })
+        }
+
+        //get fake user comments from remote resource
+        const { data } = await axios({ url: 'https://jsonplaceholder.typicode.com/posts/1/comments' })
+
+        return {
+            success: true,
+            msg: 'Success!',
+            userComments: data
+        }
+
     } catch (err) {
-        next(err)
+        console.log(`err`, err)
+
+        return {
+            success: false,
+            msg: 'Failed to get user comments!',
+            userComments: null
+        }
     }
 }

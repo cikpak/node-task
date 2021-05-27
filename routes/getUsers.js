@@ -1,17 +1,22 @@
 const db = require('../database')
 
 //get all users
-module.exports = async (req, res, next) => {
+module.exports = async (request, reply) => {
     try {
-        db.find({ type: 'user' }, (err, data) => {
-            if (err) throw 'Failed to get users!'
+        const users = await db.asyncFind({ type: 'user' })
 
-            res.json({
-                success: true,
-                users: data,
-            })
-        })
+        return {
+            success: true,
+            msg: 'Success!',
+            users
+        }
     } catch (err) {
-        next('Error while geting users!')
+        console.log(`err`, err)
+
+        return {
+            success: false,
+            msg: 'Failed to get all users!',
+            users: null
+        }
     }
 }

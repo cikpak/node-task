@@ -1,30 +1,27 @@
 const db = require('../database')
 
-
-module.exports = (req, res, next) => {
+module.exports = async (request) => {
     try {
-        const { id } = req.params
+        const { id } = request.params
 
-        db.find({ type: 'user', _id: id }, (err, data) => {
-            try {
-                if (err)   return next(`Failed to get user with id ${id}`)
+        const user = await db.asyncFindOne({ type: 'user', _id: id })
 
-                if (data.length === 0) {
-                    res.status(400).json({
-                        success: false,
-                        user: null
-                    })
-                } else {
-                    res.json({
-                        success: true,
-                        user: data
-                    })
-                }
-            } catch (err) {
-                next(err)
-            }
-        })
+        console.log(`user`, user)
+
+        if (!user) throw new Error()
+
+        return {
+            success: true,
+            msg: 'Success!',
+            user
+        }
     } catch (err) {
-        next(err)
+        console.log(`err`, err)
+        
+        return {
+            success: false,
+            msg: 'Failed to get user by id!',
+            user: null
+        }
     }
 }

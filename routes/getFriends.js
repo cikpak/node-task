@@ -1,27 +1,35 @@
 const db = require('../database');
 
-module.exports = (req, res, next) => {
+
+module.exports = async (request, h) => {
     try {
-        console.log(`req.params`, req.params)
-        const { id } = req.params
+        const { id } = request.params
 
-        db.find({ _id: id }, (err, user) => {
-            try {
-                if (err) throw 'Failed to get user friends!'
+        const user = await db.asyncFindOne({ _id: id })
 
-                db.find({ _id: { $in: user[0].friends.map(friend => friend.friendId) } }, (err, friends) => {
-                    if (err) throw 'Cand get user friends!'
-
-                    res.json({
-                        success: true,
-                        friends
-                    })
-                })
-            } catch (err) {
-                next(err)
+        if (!user) {
+            return {
+                success: false,
+                msg: 'Invalid user id!',
+                userFriends: null
             }
-        })
+        }
+
+        const userFriends = await db.asyncFind({ _id: { $in: user.friends.map(friend => friend.friendId) } })
+
+        return {
+            success: true,
+            msg: 'Success!',
+            userFriends
+        }
+
     } catch (err) {
-        next(err)
+        console.log(`err`, err)
+        
+        return {
+            success: false,
+            msg: 'Failed to get user friends!',
+            userFriends: null
+        }
     }
 }

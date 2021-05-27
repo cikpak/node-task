@@ -1,15 +1,66 @@
-const { Router } = require('express')
+module.exports = (server) => {
 
-const router = new Router()
+    //add new user
+    server.route({
+        method: 'POST',
+        path: '/user',
+        handler: require('./addUser')
+    })
 
-router.post('/user', require('./addUser'))
-router.get('/user', require('./getUsers'))
-router.get('/user/:id', require('./getUserById'))
-router.delete('/user/:id', require('./deleteUser'))
-router.patch('/user/:id', require('./patchUserById'))
-router.get('/user/:id/friend', require('./getFriends.js'))
-router.post('/user/:id/friend', require('./addFriend'))
 
-router.get('/user/:id/comments', require('./getUserComments'))
+    //get all users
+    server.route({
+        method: 'GET',
+        path: '/user',
+        handler: require('./getUsers')
+    })
 
-module.exports = router
+
+    // get one user by id
+    server.route({
+        method: 'GET',
+        path: '/user/{id}',
+        handler: require('./getUserById')
+    })
+
+
+    // delete user by id
+    server.route({
+        method: 'DELETE',
+        path: '/user/{id}',
+        handler: require('./deleteUser')
+    })
+
+
+    // change user data
+    server.route({
+        method: 'PATCH',
+        path: '/user/{id}',
+        handler: require('./patchUserById')
+    })
+
+
+    // add new friend
+    server.route({
+        method: 'POST',
+        path: '/user/{id}/friend',
+        handler: require('./addFriend')
+    })
+
+
+    // get user's friends 
+    server.route({
+        method: 'GET',
+        path: '/user/{id}/friend',
+        handler: require('./getFriends')
+    })
+
+
+    //get user comments
+    server.route({
+        method: 'GET',
+        path: '/user/{id}/comments',
+        handler: require('./getUserComments')
+    })
+
+}

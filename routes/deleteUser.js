@@ -1,30 +1,26 @@
 const db = require('../database')
 
 
-module.exports = (req, res, next) => {
+module.exports = async (request, h) => {
     try {
-        const { id } = req.params
+        const { id } = request.params
 
-        db.findOne({ _id: id }, (err, data) => {
-            try {
-                if (err) throw 'Failed to delete user from database!'
 
-                db.remove({ _id: id }, (err, numRemoved) => {
-                    try {
-                        if (err) throw 'Failed to delete user from database!'
-                        if (numRemoved !== 1) throw 'Failed to delete user!'
+        const user = await db.asyncFindOne({ _id: id })
 
-                        
-                        res.status(204).end()
-                    } catch (err) {
-                        next(err)
-                    }
-                })
-            } catch (err) {
-                next(err)
-            }
-        })
+        if (!user) throw new Error()
+
+        const numRemoved = await db.asyncRemove({ _id: id })
+
+        if (numRemoved === 1) {
+            return h.response().code(209)
+        }
     } catch (err) {
-        next(err)
+        console.log(`err`, err)
+
+        return {
+            success: false,
+            msg: 'Failed to delete user!'
+        }
     }
 }

@@ -1,16 +1,21 @@
 require('dotenv').config()
 const PORT = process.env.PORT
 
-const express = require('express')
-const app = express()
+const Hapi = require('@hapi/hapi')
+const routes = require('./routes/index')
 
-app.use(require('cors')())
-app.use(express.json())
+const start = async () => {
+    const server = Hapi.server({
+        port: PORT,
+        host: 'localhost'
+    })
 
-app.use(require('./routes/index'))
+    routes(server)
 
-app.use(require("./middlewares/errors.middleware"));
+    await server.start()
 
-app.listen(PORT, () => {
-    console.log(`Server listening on ${PORT}`)
-})
+    console.log(`Server started on: ${server.info.uri}`)
+}
+
+//starting server
+start()
